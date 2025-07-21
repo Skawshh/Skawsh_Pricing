@@ -9,27 +9,27 @@ All colors MUST be HSL.
 @layer base {
   :root {
     --background: 248 250 252;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 222 84% 5%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 84% 5%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222 84% 5%;
 
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
 
     --muted: 220 14% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 220 13% 91%;
@@ -43,7 +43,7 @@ All colors MUST be HSL.
     --laundry-express-foreground: 0 0% 100%;
     --laundry-standard: 217 91% 60%;
     --laundry-standard-foreground: 0 0% 100%;
-    --laundry-background: 248 250 252;
+    --laundry-background: 248 25% 97%;
     --laundry-card: 0 0% 100%;
     --laundry-border: 220 13% 91%;
     

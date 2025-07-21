@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -152,16 +153,16 @@ const AddServiceForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-laundry-background p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
       <div className="max-w-4xl mx-auto">
-        <Card className="shadow-medium border-laundry-border">
-          <CardHeader className="border-b border-laundry-border bg-laundry-card">
-            <CardTitle className="text-2xl font-semibold text-foreground">
-              Add Service
+        <Card className="shadow-xl border-0 bg-white/70 backdrop-blur-sm">
+          <CardHeader className="border-b border-slate-200 bg-white/50 backdrop-blur-sm">
+            <CardTitle className="text-3xl font-bold text-slate-800 text-center">
+              Add Laundry Service
             </CardTitle>
           </CardHeader>
           
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-8 space-y-8 bg-white/60 backdrop-blur-sm">
             {/* Service Information Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -172,10 +173,10 @@ const AddServiceForm = () => {
                   value={formData.serviceName} 
                   onValueChange={(value) => setFormData(prev => ({ ...prev, serviceName: value }))}
                 >
-                  <SelectTrigger className={`h-11 ${errors.serviceName ? 'border-destructive' : 'border-laundry-border'}`}>
+                  <SelectTrigger className={`h-12 border-2 ${errors.serviceName ? 'border-red-300' : 'border-slate-200'} bg-white/80 hover:border-blue-300 transition-colors`}>
                     <SelectValue placeholder="Select service name" />
                   </SelectTrigger>
-                  <SelectContent className="bg-laundry-card border-laundry-border">
+                  <SelectContent className="bg-white border-slate-200">
                     {serviceOptions.map(option => (
                       <SelectItem key={option} value={option}>{option}</SelectItem>
                     ))}
@@ -191,10 +192,10 @@ const AddServiceForm = () => {
                   value={formData.subServiceName} 
                   onValueChange={(value) => setFormData(prev => ({ ...prev, subServiceName: value }))}
                 >
-                  <SelectTrigger className={`h-11 ${errors.subServiceName ? 'border-destructive' : 'border-laundry-border'}`}>
+                  <SelectTrigger className={`h-12 border-2 ${errors.subServiceName ? 'border-red-300' : 'border-slate-200'} bg-white/80 hover:border-blue-300 transition-colors`}>
                     <SelectValue placeholder="Select sub service name" />
                   </SelectTrigger>
-                  <SelectContent className="bg-laundry-card border-laundry-border">
+                  <SelectContent className="bg-white border-slate-200">
                     {subServiceOptions.map(option => (
                       <SelectItem key={option} value={option}>{option}</SelectItem>
                     ))}
@@ -205,24 +206,34 @@ const AddServiceForm = () => {
 
             {/* Wash Type Selection */}
             <div className="space-y-4">
-              <Label className="text-sm font-medium">Wash Type Selection</Label>
-              <div className="flex gap-4">
-                <Button
-                  type="button"
-                  variant={formData.washTypes.includes('standard') ? 'default' : 'outline'}
-                  onClick={() => washTypeToggle('standard')}
-                  className="px-8 py-3 h-auto"
-                >
-                  Standard
-                </Button>
-                <Button
-                  type="button"
-                  variant={formData.washTypes.includes('express') ? 'default' : 'outline'}
-                  onClick={() => washTypeToggle('express')}
-                  className="px-8 py-3 h-auto"
-                >
-                  Express
-                </Button>
+              <Label className="text-sm font-medium">Wash Type Selection *</Label>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    id="standard"
+                    checked={formData.washTypes.includes('standard')}
+                    onCheckedChange={() => washTypeToggle('standard')}
+                  />
+                  <Label 
+                    htmlFor="standard" 
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    Standard Wash
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    id="express"
+                    checked={formData.washTypes.includes('express')}
+                    onCheckedChange={() => washTypeToggle('express')}
+                  />
+                  <Label 
+                    htmlFor="express" 
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    Express Wash
+                  </Label>
+                </div>
               </div>
               {errors.washTypes && (
                 <p className="text-sm text-destructive">Please select at least one wash type</p>
@@ -378,31 +389,20 @@ const AddServiceForm = () => {
             )}
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-laundry-border">
+            <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-slate-200">
               <Button 
-                variant="laundry" 
-                onClick={handleSave}
-                className="sm:flex-1"
+                onClick={handleCancel}
+                variant="outline"
+                className="sm:flex-1 h-12 border-2 border-slate-300 text-slate-700 hover:bg-slate-50"
               >
-                Save Sub Service
+                Cancel
               </Button>
-              
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={handleCancel}
-                  className="px-8"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  variant="laundry" 
-                  onClick={handleSave}
-                  className="px-8"
-                >
-                  Save
-                </Button>
-              </div>
+              <Button 
+                onClick={handleSave}
+                className="sm:flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
+              >
+                Save Service
+              </Button>
             </div>
           </CardContent>
         </Card>
