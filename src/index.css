@@ -36,16 +36,16 @@ All colors MUST be HSL.
     --input: 220 13% 91%;
     --ring: 217 91% 60%;
 
-    /* Laundry service specific colors */
-    --laundry-primary: 217 91% 60%;
-    --laundry-primary-foreground: 0 0% 100%;
-    --laundry-express: 142 71% 45%;
-    --laundry-express-foreground: 0 0% 100%;
-    --laundry-standard: 217 91% 60%;
-    --laundry-standard-foreground: 0 0% 100%;
-    --laundry-background: 248 25% 97%;
-    --laundry-card: 0 0% 100%;
-    --laundry-border: 220 13% 91%;
+    /* Service specific colors - light gray theme */
+    --service-primary: 220 9% 46%;
+    --service-primary-foreground: 0 0% 100%;
+    --service-express: 142 71% 45%;
+    --service-express-foreground: 0 0% 100%;
+    --service-standard: 220 9% 46%;
+    --service-standard-foreground: 0 0% 100%;
+    --service-background: 220 14% 96%;
+    --service-card: 0 0% 100%;
+    --service-border: 220 13% 91%;
     
     /* Shadows */
     --shadow-soft: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);

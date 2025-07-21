@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ClothingItem {
@@ -18,8 +18,11 @@ interface ClothingItem {
 
 const AddServiceForm = () => {
   const { toast } = useToast();
+  const [serviceName, setServiceName] = useState('');
+  const [showSubServiceForm, setShowSubServiceForm] = useState(false);
+  const [savedSubServices, setSavedSubServices] = useState<any[]>([]);
+  
   const [formData, setFormData] = useState({
-    serviceName: '',
     subServiceName: '',
     washTypes: [] as string[],
     pricingType: 'perKg',
@@ -92,10 +95,15 @@ const AddServiceForm = () => {
     ));
   };
 
+  const addSubService = () => {
+    if (serviceName) {
+      setShowSubServiceForm(true);
+    }
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, boolean> = {};
     
-    if (!formData.serviceName) newErrors.serviceName = true;
     if (!formData.subServiceName) newErrors.subServiceName = true;
     if (formData.washTypes.length === 0) newErrors.washTypes = true;
     
@@ -122,14 +130,32 @@ const AddServiceForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSaveSubService = () => {
     if (validateForm()) {
-      toast({
-        title: "Service Added Successfully",
-        description: "The sub service has been saved to the system.",
+      const newSubService = {
+        id: Date.now().toString(),
+        ...formData,
+        clothingItems: [...clothingItems]
+      };
+      
+      setSavedSubServices(prev => [...prev, newSubService]);
+      
+      // Reset form for next sub service
+      setFormData({
+        subServiceName: '',
+        washTypes: [],
+        pricingType: 'perKg',
+        standardPricePerKg: '',
+        expressPricePerKg: '',
       });
-      console.log('Form Data:', formData);
-      console.log('Clothing Items:', clothingItems);
+      setClothingItems([]);
+      setErrors({});
+      setShowSubServiceForm(false);
+      
+      toast({
+        title: "Sub-Service Saved Successfully",
+        description: "You can now add another sub-service.",
+      });
     } else {
       toast({
         title: "Validation Error",
@@ -140,8 +166,10 @@ const AddServiceForm = () => {
   };
 
   const handleCancel = () => {
+    setServiceName('');
+    setShowSubServiceForm(false);
+    setSavedSubServices([]);
     setFormData({
-      serviceName: '',
       subServiceName: '',
       washTypes: [],
       pricingType: 'perKg',
@@ -153,257 +181,315 @@ const AddServiceForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="max-w-4xl mx-auto">
-        <Card className="shadow-xl border-0 bg-white/70 backdrop-blur-sm">
-          <CardHeader className="border-b border-slate-200 bg-white/50 backdrop-blur-sm">
-            <CardTitle className="text-3xl font-bold text-slate-800 text-center">
-              Add Laundry Service
+        <Card className="shadow-xl border-0 bg-white">
+          <CardHeader className="border-b border-gray-200 bg-white relative">
+            <button 
+              onClick={handleCancel}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <CardTitle className="text-2xl font-bold text-gray-800">
+              Add Service
             </CardTitle>
+            <p className="text-gray-600 text-sm">Add a new service with its subservices and items</p>
           </CardHeader>
           
-          <CardContent className="p-8 space-y-8 bg-white/60 backdrop-blur-sm">
-            {/* Service Information Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="serviceName" className="text-sm font-medium">
-                  Service Name *
-                </Label>
-                <Select 
-                  value={formData.serviceName} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, serviceName: value }))}
-                >
-                  <SelectTrigger className={`h-12 border-2 ${errors.serviceName ? 'border-red-300' : 'border-slate-200'} bg-white/80 hover:border-blue-300 transition-colors`}>
-                    <SelectValue placeholder="Select service name" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
-                    {serviceOptions.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="subServiceName" className="text-sm font-medium">
-                  Sub Service Name *
-                </Label>
-                <Select 
-                  value={formData.subServiceName} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, subServiceName: value }))}
-                >
-                  <SelectTrigger className={`h-12 border-2 ${errors.subServiceName ? 'border-red-300' : 'border-slate-200'} bg-white/80 hover:border-blue-300 transition-colors`}>
-                    <SelectValue placeholder="Select sub service name" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
-                    {subServiceOptions.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Wash Type Selection */}
-            <div className="space-y-4">
-              <Label className="text-sm font-medium">Wash Type Selection *</Label>
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="standard"
-                    checked={formData.washTypes.includes('standard')}
-                    onCheckedChange={() => washTypeToggle('standard')}
-                  />
-                  <Label 
-                    htmlFor="standard" 
-                    className="text-sm font-medium cursor-pointer"
-                  >
-                    Standard Wash
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="express"
-                    checked={formData.washTypes.includes('express')}
-                    onCheckedChange={() => washTypeToggle('express')}
-                  />
-                  <Label 
-                    htmlFor="express" 
-                    className="text-sm font-medium cursor-pointer"
-                  >
-                    Express Wash
-                  </Label>
-                </div>
-              </div>
-              {errors.washTypes && (
-                <p className="text-sm text-destructive">Please select at least one wash type</p>
-              )}
-            </div>
-
-            {/* Pricing Type Selection */}
-            <div className="space-y-4">
-              <Label className="text-sm font-medium">Pricing Type</Label>
-              <RadioGroup 
-                value={formData.pricingType} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, pricingType: value }))}
-                className="flex gap-6"
+          <CardContent className="p-6 space-y-6">
+            {/* Service Selection */}
+            <div className="space-y-3">
+              <Label htmlFor="serviceName" className="text-base font-medium text-gray-700">
+                Service Name *
+              </Label>
+              <Select 
+                value={serviceName} 
+                onValueChange={setServiceName}
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="perKg" id="perKg" />
-                  <Label htmlFor="perKg">Per KG</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="clothingItems" id="clothingItems" />
-                  <Label htmlFor="clothingItems">Clothing Items</Label>
-                </div>
-              </RadioGroup>
+                <SelectTrigger className="h-12 border border-gray-300 bg-white hover:border-gray-400 transition-colors">
+                  <SelectValue placeholder="Select a service" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-gray-200">
+                  {serviceOptions.map(option => (
+                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Conditional Pricing Fields */}
-            {formData.pricingType === 'perKg' && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {formData.washTypes.includes('standard') && (
-                    <div className="space-y-2">
-                      <Label htmlFor="standardPrice" className="text-sm font-medium">
-                        Standard Price per KG
-                      </Label>
-                      <Input
-                        id="standardPrice"
-                        type="number"
-                        placeholder="0.00"
-                        value={formData.standardPricePerKg}
-                        onChange={(e) => setFormData(prev => ({ ...prev, standardPricePerKg: e.target.value }))}
-                        className={`h-11 ${errors.standardPricePerKg ? 'border-destructive' : 'border-laundry-border'}`}
-                      />
-                    </div>
-                  )}
-                  
-                  {formData.washTypes.includes('express') && (
-                    <div className="space-y-2">
-                      <Label htmlFor="expressPrice" className="text-sm font-medium">
-                        Express Price per KG
-                      </Label>
-                      <Input
-                        id="expressPrice"
-                        type="number"
-                        placeholder="0.00"
-                        value={formData.expressPricePerKg}
-                        onChange={(e) => setFormData(prev => ({ ...prev, expressPricePerKg: e.target.value }))}
-                        className={`h-11 ${errors.expressPricePerKg ? 'border-destructive' : 'border-laundry-border'}`}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {formData.pricingType === 'clothingItems' && (
-              <div className="space-y-4 animate-fade-in">
+            {/* Sub Services Section */}
+            {serviceName && (
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label className="text-lg font-medium">Clothing Items</Label>
-                  {errors.clothingItems && (
-                    <p className="text-sm text-destructive">Please add at least one clothing item</p>
+                  <Label className="text-base font-medium text-gray-700">Sub Services</Label>
+                  {savedSubServices.length > 0 && (
+                    <span className="text-sm text-gray-600">{savedSubServices.length} sub-service(s) added</span>
                   )}
                 </div>
                 
-                {/* Add New Item */}
-                <div className="flex gap-4 items-end">
-                  <div className="flex-1 space-y-2">
-                    <Label htmlFor="clothingType" className="text-sm font-medium">
-                      Add New Item
-                    </Label>
-                    <Select value={selectedClothingType} onValueChange={setSelectedClothingType}>
-                      <SelectTrigger className="h-11 border-laundry-border">
-                        <SelectValue placeholder="Select clothing type" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-laundry-card border-laundry-border">
-                        {clothingTypes.filter(type => !clothingItems.some(item => item.type === type)).map(type => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {!showSubServiceForm && (
                   <Button 
-                    type="button" 
-                    onClick={addClothingItem}
-                    disabled={!selectedClothingType}
-                    variant="laundry"
-                    className="h-11"
+                    onClick={addSubService}
+                    className="h-11 bg-blue-600 hover:bg-blue-700 text-white px-6"
                   >
-                    <Plus className="h-4 w-4" />
-                    Add Item
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Sub Service
                   </Button>
-                </div>
+                )}
+                
+                {/* Sub Service Form */}
+                {showSubServiceForm && (
+                  <div className="space-y-6 p-6 border border-gray-200 rounded-lg bg-gray-50">
+                    <div className="space-y-3">
+                      <Label htmlFor="subServiceName" className="text-sm font-medium text-gray-700">
+                        Sub Service Name *
+                      </Label>
+                      <Select 
+                        value={formData.subServiceName} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, subServiceName: value }))}
+                      >
+                        <SelectTrigger className={`h-11 border ${errors.subServiceName ? 'border-red-400' : 'border-gray-300'} bg-white hover:border-gray-400 transition-colors`}>
+                          <SelectValue placeholder="Select sub service name" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-gray-200">
+                          {subServiceOptions.map(option => (
+                            <SelectItem key={option} value={option}>{option}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {/* Clothing Items List */}
-                {clothingItems.length > 0 && (
-                  <div className="space-y-4">
-                    {clothingItems.map((item) => (
-                      <div key={item.id} className="p-4 border border-laundry-border rounded-lg bg-laundry-card space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium">{item.type}</h4>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeClothingItem(item.id)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    {/* Wash Type Selection */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium text-gray-700">Wash Type Selection *</Label>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center space-x-3">
+                          <Checkbox
+                            id="standard"
+                            checked={formData.washTypes.includes('standard')}
+                            onCheckedChange={() => washTypeToggle('standard')}
+                          />
+                          <Label 
+                            htmlFor="standard" 
+                            className="text-sm font-medium cursor-pointer text-gray-700"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                            Standard Wash
+                          </Label>
                         </div>
-                        
+                        <div className="flex items-center space-x-3">
+                          <Checkbox
+                            id="express"
+                            checked={formData.washTypes.includes('express')}
+                            onCheckedChange={() => washTypeToggle('express')}
+                          />
+                          <Label 
+                            htmlFor="express" 
+                            className="text-sm font-medium cursor-pointer text-gray-700"
+                          >
+                            Express Wash
+                          </Label>
+                        </div>
+                      </div>
+                      {errors.washTypes && (
+                        <p className="text-sm text-red-600">Please select at least one wash type</p>
+                      )}
+                    </div>
+
+                    {/* Pricing Type Selection */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium text-gray-700">Pricing Type</Label>
+                      <RadioGroup 
+                        value={formData.pricingType} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, pricingType: value }))}
+                        className="flex gap-6"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="perKg" id="perKg" />
+                          <Label htmlFor="perKg" className="text-gray-700">Per KG</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="clothingItems" id="clothingItems" />
+                          <Label htmlFor="clothingItems" className="text-gray-700">Clothing Items</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    {/* Conditional Pricing Fields */}
+                    {formData.pricingType === 'perKg' && (
+                      <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {formData.washTypes.includes('standard') && (
                             <div className="space-y-2">
-                              <Label className="text-sm">Standard Price</Label>
+                              <Label htmlFor="standardPrice" className="text-sm font-medium text-gray-700">
+                                Standard Price per KG
+                              </Label>
                               <Input
+                                id="standardPrice"
                                 type="number"
                                 placeholder="0.00"
-                                value={item.standardPrice}
-                                onChange={(e) => updateClothingItem(item.id, 'standardPrice', e.target.value)}
-                                className={`h-10 ${errors[`${item.id}_standard`] ? 'border-destructive' : 'border-laundry-border'}`}
+                                value={formData.standardPricePerKg}
+                                onChange={(e) => setFormData(prev => ({ ...prev, standardPricePerKg: e.target.value }))}
+                                className={`h-10 ${errors.standardPricePerKg ? 'border-red-400' : 'border-gray-300'}`}
                               />
                             </div>
                           )}
                           
                           {formData.washTypes.includes('express') && (
                             <div className="space-y-2">
-                              <Label className="text-sm">Express Price</Label>
+                              <Label htmlFor="expressPrice" className="text-sm font-medium text-gray-700">
+                                Express Price per KG
+                              </Label>
                               <Input
+                                id="expressPrice"
                                 type="number"
                                 placeholder="0.00"
-                                value={item.expressPrice}
-                                onChange={(e) => updateClothingItem(item.id, 'expressPrice', e.target.value)}
-                                className={`h-10 ${errors[`${item.id}_express`] ? 'border-destructive' : 'border-laundry-border'}`}
+                                value={formData.expressPricePerKg}
+                                onChange={(e) => setFormData(prev => ({ ...prev, expressPricePerKg: e.target.value }))}
+                                className={`h-10 ${errors.expressPricePerKg ? 'border-red-400' : 'border-gray-300'}`}
                               />
                             </div>
                           )}
                         </div>
                       </div>
+                    )}
+
+                    {formData.pricingType === 'clothingItems' && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-medium text-gray-700">Clothing Items</Label>
+                          {errors.clothingItems && (
+                            <p className="text-sm text-red-600">Please add at least one clothing item</p>
+                          )}
+                        </div>
+                        
+                        {/* Add New Item */}
+                        <div className="flex gap-3 items-end">
+                          <div className="flex-1 space-y-2">
+                            <Label htmlFor="clothingType" className="text-sm font-medium text-gray-700">
+                              Add New Item
+                            </Label>
+                            <Select value={selectedClothingType} onValueChange={setSelectedClothingType}>
+                              <SelectTrigger className="h-10 border-gray-300">
+                                <SelectValue placeholder="Select clothing type" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white border-gray-200">
+                                {clothingTypes.filter(type => !clothingItems.some(item => item.type === type)).map(type => (
+                                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button 
+                            type="button" 
+                            onClick={addClothingItem}
+                            disabled={!selectedClothingType}
+                            className="h-10 bg-gray-600 hover:bg-gray-700 text-white"
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add Item
+                          </Button>
+                        </div>
+
+                        {/* Clothing Items List */}
+                        {clothingItems.length > 0 && (
+                          <div className="space-y-3">
+                            {clothingItems.map((item) => (
+                              <div key={item.id} className="p-4 border border-gray-200 rounded-lg bg-white space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="font-medium text-gray-700">{item.type}</h4>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeClothingItem(item.id)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  {formData.washTypes.includes('standard') && (
+                                    <div className="space-y-1">
+                                      <Label className="text-sm text-gray-700">Standard Price</Label>
+                                      <Input
+                                        type="number"
+                                        placeholder="0.00"
+                                        value={item.standardPrice}
+                                        onChange={(e) => updateClothingItem(item.id, 'standardPrice', e.target.value)}
+                                        className={`h-9 ${errors[`${item.id}_standard`] ? 'border-red-400' : 'border-gray-300'}`}
+                                      />
+                                    </div>
+                                  )}
+                                  
+                                  {formData.washTypes.includes('express') && (
+                                    <div className="space-y-1">
+                                      <Label className="text-sm text-gray-700">Express Price</Label>
+                                      <Input
+                                        type="number"
+                                        placeholder="0.00"
+                                        value={item.expressPrice}
+                                        onChange={(e) => updateClothingItem(item.id, 'expressPrice', e.target.value)}
+                                        className={`h-9 ${errors[`${item.id}_express`] ? 'border-red-400' : 'border-gray-300'}`}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Save Sub Service Button */}
+                    <div className="flex gap-3 pt-4 border-t border-gray-300">
+                      <Button 
+                        onClick={handleSaveSubService}
+                        className="h-11 bg-green-600 hover:bg-green-700 text-white px-6"
+                      >
+                        Save Sub-Service
+                      </Button>
+                      <Button 
+                        onClick={() => setShowSubServiceForm(false)}
+                        variant="outline"
+                        className="h-11 border border-gray-300 text-gray-700 hover:bg-gray-100"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Saved Sub Services Display */}
+                {savedSubServices.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-gray-700">Saved Sub-Services:</h4>
+                    {savedSubServices.map((subService, index) => (
+                      <div key={subService.id} className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <span className="text-green-800 font-medium">{index + 1}. {subService.subServiceName}</span>
+                        <span className="text-green-600 text-sm ml-2">
+                          ({subService.washTypes.join(', ')})
+                        </span>
+                      </div>
                     ))}
+                    
+                    {/* Add Another Sub Service Button */}
+                    {!showSubServiceForm && (
+                      <Button 
+                        onClick={addSubService}
+                        variant="outline"
+                        className="h-10 border border-blue-300 text-blue-600 hover:bg-blue-50"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Another Sub Service
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
             )}
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-slate-200">
-              <Button 
-                onClick={handleCancel}
-                variant="outline"
-                className="sm:flex-1 h-12 border-2 border-slate-300 text-slate-700 hover:bg-slate-50"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSave}
-                className="sm:flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
-              >
-                Save Service
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
